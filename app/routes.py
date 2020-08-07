@@ -11,10 +11,8 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
-        remember_me = request.form.get('remember_me')
 
         user = User.query.filter_by(email=email).first()
         if user is None or not user.check_password(password):
@@ -30,8 +28,6 @@ def logout():
     logout_user()
     flash('You have been logged out successfully.', 'info')
     return redirect(url_for('login'))
-
-
 
 @app.route('/companies', methods=['GET'])
 def companies():
@@ -159,7 +155,6 @@ def delete_company(company_id):
     db.session.commit()
     return jsonify([c.to_dict() for c in Company.query.all()])
     
-# WORKS BUT THROWS AN ERROR
 @app.route('/name/<int:name_id>', methods=['DELETE'])
 def delete_name(name_id):
     """
@@ -169,3 +164,11 @@ def delete_name(name_id):
     db.session.delete(n)
     db.session.commit()
     return jsonify([n.to_dict() for n in Name.query.all()])
+
+@app.route('/user/<int:user_id>', methods=['GET'])
+def user(user_id):
+    """
+    [GET] /user/<user_id>
+    """
+    user = User.query.get_or_404(user_id)
+    return jsonify(user.to_dict())

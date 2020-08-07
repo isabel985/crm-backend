@@ -3,14 +3,12 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)
     user_email = db.Column(db.String, nullable=False, unique=True)
     team_id = db.Column(db.Integer, db.ForeignKey('team.team_id'))
-    names = db.relationship('Name')
-    companies = db.relationship('Company')
 
     def generate_password(self, original_password):
         self.password = generate_password_hash(original_password)
@@ -18,10 +16,16 @@ class User(db.Model):
     def check_password(self, original_password):
         return check_password_hash(self.password, original_password)
 
+    def to_dict(self):
+        data = {
+            'user_id': self.user_id,
+            'username': self.username
+        }
+        return data
+
 class Team(db.Model):
     team_id = db.Column(db.Integer, primary_key=True)
     team_name = db.Column(db.String, nullable=False)
-    users = db.relationship('User', backref='author', lazy='dynamic')
 
 class Name(db.Model):
     name_id = db.Column(db.Integer, primary_key=True)
@@ -64,6 +68,8 @@ class Name(db.Model):
         for field in ['name_status', 'first_name', 'last_name', 'title', 'name_phone', 'name_email', 'name_city', 'name_state', 'name_zip_code', 'company_id', 'user_id' 'notes', 'resume']:
             if field in data:
                 setattr(self, field, data[field])
+            else:
+                setattr(self, field, data[''])
 
     def create_name(self):
         db.session.add(self)
